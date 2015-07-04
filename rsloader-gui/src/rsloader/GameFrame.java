@@ -90,8 +90,7 @@ public class GameFrame extends JFrame {
 	}
 
 	private JMenuItem addPredefinedSize(int width, int height) {
-		JMenuItem menuItem = new JMenuItem(
-				new PredefinedSizeAction(width, height));
+		JMenuItem menuItem = new JMenuItem(new PredefinedSizeAction(width, height));
 		predefinedSizesMenu.add(menuItem);
 		return menuItem;
 	}

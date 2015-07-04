@@ -4,23 +4,25 @@ import java.applet.Applet;
 import java.applet.AppletStub;
 import java.awt.Dimension;
 
-import javax.swing.JFrame;
-
 public class Game {
+    public static void launch(GameClassLoader gcl, GameParameters params, AppletStub stub) throws Exception {
+        Main.getLoadingDialog().setStatus("Launching game");
+        Applet game = (Applet) gcl.loadClass(params.getInitialClass()).newInstance();
+        game.setPreferredSize(new Dimension(
+                Integer.parseInt(Main.getConfiguration().getProperty("width")),
+                Integer.parseInt(Main.getConfiguration().getProperty("height"))));
+        game.setStub(stub);
+        game.init();
+        game.start();
 
-	public static void launch(GameClassLoader gcl, GameParameters params, AppletStub stub) throws Exception {
-		Main.getLoadingDialog().setStatus("Launching game");
-		Applet game = (Applet) gcl.loadClass(params.getInitialClass()).newInstance();
-		game.setPreferredSize(new Dimension(Integer.parseInt(params.getMinWidth()), Integer.parseInt(params.getMinHeight())));
-		game.setStub(stub);
-		game.init();
-		game.start();
-		JFrame frame = new JFrame(params.getTitle());
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setContentPane(game);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-	}
-
+        GameWindow window = new GameWindow(game, params);
+        String xStr = Main.getConfiguration().getProperty("x");
+        String yStr = Main.getConfiguration().getProperty("y");
+        if (xStr == null || yStr == null) {
+            window.setLocationRelativeTo(null);
+        } else {
+            window.setLocation(Integer.valueOf(xStr), Integer.valueOf(yStr));
+        }
+        window.setVisible(true);
+    }
 }

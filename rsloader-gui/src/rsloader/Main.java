@@ -4,7 +4,9 @@ import java.io.*;
 import java.net.URL;
 import java.util.Properties;
 
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class Main {
 	public static final String[] languages = { "en", "de", "fr", "pt" };
@@ -29,6 +31,7 @@ public class Main {
 
 		SwingUtilities.invokeLater(() -> {
 			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				loadingDialog = new DialogFrame();
 				loadingDialog.setVisible(true);
 				GameParameters params;

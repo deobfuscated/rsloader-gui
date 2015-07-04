@@ -1,10 +1,12 @@
 package rsloader;
 
-import java.io.*;
+import java.awt.Font;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -31,7 +33,15 @@ public class Main {
 
 		SwingUtilities.invokeLater(() -> {
 			try {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				String className = UIManager.getSystemLookAndFeelClassName();
+				UIManager.setLookAndFeel(className);
+				if (className.contains("windows")) {
+					Font font = new Font("Segoe UI", Font.PLAIN, 12);
+					UIManager.getDefaults().put("Button.font", font);
+					UIManager.getDefaults().put("TextField.font", font);
+					UIManager.getDefaults().put("Label.font", font);
+					UIManager.getDefaults().put("CheckBox.font", font);
+				}
 				loadingDialog = new DialogFrame();
 				loadingDialog.setVisible(true);
 				GameParameters params;

@@ -91,7 +91,7 @@ public class GameFrame extends JFrame {
 
 	private JMenuItem addPredefinedSize(int width, int height) {
 		JMenuItem menuItem = new JMenuItem(
-				new PredefinedSizeAction(String.format("%d × %d", width, height), width, height));
+				new PredefinedSizeAction(width, height));
 		predefinedSizesMenu.add(menuItem);
 		return menuItem;
 	}
@@ -109,8 +109,8 @@ public class GameFrame extends JFrame {
 		private int width;
 		private int height;
 
-		public PredefinedSizeAction(String name, int width, int height) {
-			super(name);
+		public PredefinedSizeAction(int width, int height) {
+			super(String.format("%d × %d", width, height));
 			this.width = width;
 			this.height = height;
 		}

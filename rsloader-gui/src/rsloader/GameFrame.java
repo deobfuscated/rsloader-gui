@@ -15,25 +15,29 @@ public class GameFrame extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final Dimension[] PREDEFINED_SIZES = { new Dimension(800, 600), new Dimension(1280, 720) };
-	private Applet game;
+	private static final Dimension[] PREDEFINED_SIZES = {
+			new Dimension(765, 543),
+			new Dimension(800, 600),
+			new Dimension(1280, 720)
+	};
+
+	private Applet gameApplet;
 	private GameParameters parameters;
 
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
-	private ProgressPanel progressPanel;
+	//private ProgressPanel progressPanel;
 
-	public GameFrame(Applet game, GameParameters parameters) {
-		this.game = game;
+	public GameFrame(Applet gameApplet, GameParameters parameters) {
+		this.gameApplet = gameApplet;
 		this.parameters = parameters;
 
 		JTextField worldTextField = new JTextField(15);
 		worldTextField.setMaximumSize(new Dimension(100, Integer.MAX_VALUE));
-		JButton loadButton = new JButton("Load");
+		JButton loadButton = new JButton(new LoadGameAction("Load"));
 		predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
 		predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
 
-		addPredefinedSize(parameters.getMinWidth(), parameters.getMinHeight());
 		for (Dimension dim : PREDEFINED_SIZES) {
 			addPredefinedSize(dim.width, dim.height);
 		}
@@ -44,14 +48,18 @@ public class GameFrame extends JFrame {
 		menuBar.add(Box.createHorizontalGlue());
 		setJMenuBar(menuBar);
 
+		// progressPanel = new ProgressPanel();
+
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
 		Container cp = getContentPane();
-		cp.add(game);
+		// cp.add(progressPanel);
+		cp.add(gameApplet);
 		pack();
 		updateTitle();
 
 		// Update title when applet changes size
-		game.addComponentListener(new ComponentAdapter() {
+		gameApplet.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				updateTitle();
@@ -63,8 +71,8 @@ public class GameFrame extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				// Only save window state if it is not maximized.
 				if (getExtendedState() == NORMAL) {
-					Main.getConfiguration().setProperty("width", String.valueOf(game.getWidth()));
-					Main.getConfiguration().setProperty("height", String.valueOf(game.getHeight()));
+					Main.getConfiguration().setProperty("width", String.valueOf(gameApplet.getWidth()));
+					Main.getConfiguration().setProperty("height", String.valueOf(gameApplet.getHeight()));
 					Main.getConfiguration().setProperty("x", String.valueOf(getX()));
 					Main.getConfiguration().setProperty("y", String.valueOf(getY()));
 					Main.saveConfiguration();
@@ -86,13 +94,39 @@ public class GameFrame extends JFrame {
 	}
 
 	private void updateTitle() {
-		setTitle(String.format("%s (%d × %d)", parameters.getTitle(), game.getWidth(), game.getHeight()));
+		setTitle(String.format("%s (%d × %d)", parameters.getTitle(), gameApplet.getWidth(), gameApplet.getHeight()));
 	}
 
 	private JMenuItem addPredefinedSize(int width, int height) {
 		JMenuItem menuItem = new JMenuItem(new PredefinedSizeAction(width, height));
 		predefinedSizesMenu.add(menuItem);
 		return menuItem;
+	}
+
+	/**
+	 * The action that loads the game.
+	 */
+	private class LoadGameAction extends AbstractAction {
+		/**
+		 * Required by Serializable.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public LoadGameAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO THIS DOESN'T WORK
+			try {
+				getContentPane().remove(gameApplet);
+				gameApplet.destroy();
+				gameApplet = null;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -116,8 +150,8 @@ public class GameFrame extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			game.setPreferredSize(new Dimension(width, height));
-			game.setSize(width, height);
+			gameApplet.setPreferredSize(new Dimension(width, height));
+			gameApplet.setSize(width, height);
 			pack();
 		}
 	}

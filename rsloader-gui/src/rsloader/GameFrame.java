@@ -1,9 +1,7 @@
 package rsloader;
 
 import java.applet.Applet;
-import java.awt.Container;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
+import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -23,10 +21,13 @@ public class GameFrame extends JFrame {
 		this.parameters = parameters;
 
 		JTextField worldTextField = new JTextField(15);
+		worldTextField.setMaximumSize(new Dimension(100, 0));
 		JButton loadButton = new JButton("Load");
-		JMenu predefinedSizesMenu = new JMenu("Predefined Sizes");
+		JMenu predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
 		JMenuItem size800MenuItem = new JMenuItem("800 x 600");
+		size800MenuItem.setActionCommand("800,600");
 		JMenuItem size1280MenuItem = new JMenuItem("1280 x 720");
+		size1280MenuItem.setActionCommand("1280,720");
 		predefinedSizesMenu.add(size800MenuItem);
 		predefinedSizesMenu.add(size1280MenuItem);
 		predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
@@ -34,14 +35,24 @@ public class GameFrame extends JFrame {
 		menuBar.add(worldTextField);
 		menuBar.add(loadButton);
 		menuBar.add(predefinedSizesMenu);
+		menuBar.add(Box.createHorizontalGlue());
 		setJMenuBar(menuBar);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		Container cp = getContentPane();
-		cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
 		cp.add(game);
 		pack();
 		updateTitle();
+		
+		ActionListener predefinedSizesListener = (e) -> {
+			String[] arr = e.getActionCommand().split(",");
+			int width = Integer.parseInt(arr[0]);
+			int height = Integer.parseInt(arr[1]);
+			game.setPreferredSize(new Dimension(width, height));
+			pack();
+		};
+		size800MenuItem.addActionListener(predefinedSizesListener);
+		size1280MenuItem.addActionListener(predefinedSizesListener);
 
 		// Update title when applet changes size
 		game.addComponentListener(new ComponentAdapter() {

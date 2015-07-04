@@ -16,22 +16,29 @@ public class GameFrame extends JFrame {
     private Applet game;
     private GameParameters parameters;
 
-    private JPanel topPanel;
+    private JMenuBar menuBar;
 
     public GameFrame(Applet game, GameParameters parameters) {
         this.game = game;
         this.parameters = parameters;
 
-        topPanel = new JPanel();
         JTextField worldTextField = new JTextField(15);
         JButton loadButton = new JButton("Load");
-        topPanel.add(worldTextField);
-        topPanel.add(loadButton);
+        JMenu predefinedSizesMenu = new JMenu("Predefined Sizes");
+        JMenuItem size800MenuItem = new JMenuItem("800 x 600");
+        JMenuItem size1280MenuItem = new JMenuItem("1280 x 720");
+        predefinedSizesMenu.add(size800MenuItem);
+        predefinedSizesMenu.add(size1280MenuItem);
+        predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
+        menuBar = new JMenuBar();
+        menuBar.add(worldTextField);
+        menuBar.add(loadButton);
+        menuBar.add(predefinedSizesMenu);
+        setJMenuBar(menuBar);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Container cp = getContentPane();
         cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
-        cp.add(topPanel);
         cp.add(game);
         pack();
         updateTitle();
@@ -64,7 +71,7 @@ public class GameFrame extends JFrame {
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     if (e.getKeyChar() == 'm' && e.isAltDown()) {
-                        topPanel.setVisible(!topPanel.isVisible());
+                        menuBar.setVisible(!menuBar.isVisible());
                     }
                 }
                 return false;

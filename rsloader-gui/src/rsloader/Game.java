@@ -15,7 +15,7 @@ public class Game {
         game.init();
         game.start();
 
-        GameWindow window = new GameWindow(game, params);
+        GameFrame window = new GameFrame(game, params);
         String xStr = Main.getConfiguration().getProperty("x");
         String yStr = Main.getConfiguration().getProperty("y");
         if (xStr == null || yStr == null) {

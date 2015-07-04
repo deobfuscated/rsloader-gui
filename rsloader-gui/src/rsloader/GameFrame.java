@@ -5,7 +5,7 @@ import java.awt.event.*;
 
 import javax.swing.JFrame;
 
-public class GameWindow extends JFrame {
+public class GameFrame extends JFrame {
     /**
      * Required by Serializable.
      */
@@ -13,7 +13,7 @@ public class GameWindow extends JFrame {
     private Applet game;
     private GameParameters parameters;
 
-    public GameWindow(Applet game, GameParameters parameters) {
+    public GameFrame(Applet game, GameParameters parameters) {
         this.game = game;
         this.parameters = parameters;
 

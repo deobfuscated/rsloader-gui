@@ -17,7 +17,6 @@ public class GamePack {
     private String game;
     private File local;
     private URL remote;
-    private byte[] data;
     private HashMap<String, byte[]> resources = new HashMap<>();
 
     private GamePack() {
@@ -29,8 +28,8 @@ public class GamePack {
         g.game = params.getCacheDir();
         g.local = new File(g.game + ".jar");
         g.remote = new URL(params.getCodeBase() + params.getJar());
-        g.data = g.load();
-        g.decompress();
+        byte[] data = g.load();
+        g.decompress(data);
         return g;
     }
 
@@ -72,7 +71,7 @@ public class GamePack {
         return b;
     }
 
-    private void decompress() throws IOException {
+    private void decompress(byte[] data) throws IOException {
         Main.getLoadingDialog().setStatus("Decompressing gamepack");
         ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(data));
         ZipEntry ze;

@@ -69,7 +69,7 @@ public class GameFrame extends JFrame {
 		focusManager.addKeyEventDispatcher(new KeyEventDispatcher() {
 			@Override
 			public boolean dispatchKeyEvent(KeyEvent e) {
-				if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyChar() == 'm' && e.isAltDown()) {
+				if (e.getID() == KeyEvent.KEY_TYPED && e.getKeyChar() == 'm' && e.isAltDown()) {
 					menuBar.setVisible(!menuBar.isVisible());
 					return true;
 				}

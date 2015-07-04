@@ -5,11 +5,11 @@ import javax.swing.JFrame;
 public class DialogFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 
-	private DialogPanel panel;
+	private ProgressPanel panel;
 
 	public DialogFrame() {
 		setTitle("Starting RSLoader...");
-		panel = new DialogPanel();
+		panel = new ProgressPanel();
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);

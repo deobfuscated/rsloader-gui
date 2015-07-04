@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
-public class DialogPanel extends JPanel {
+public class ProgressPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	private static final int WIDTH = 250, HEIGHT = 58;
@@ -16,7 +16,7 @@ public class DialogPanel extends JPanel {
 	private double progress;
 	private BufferedImage img;
 
-	public DialogPanel() {
+	public ProgressPanel() {
 		Dimension dim = new Dimension(WIDTH, HEIGHT);
 		setPreferredSize(dim);
 		setMinimumSize(dim);

@@ -1,9 +1,12 @@
 package rsloader;
 
 import java.applet.Applet;
+import java.awt.Container;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.*;
 
-import javax.swing.JFrame;
+import javax.swing.*;
 
 public class GameFrame extends JFrame {
     /**
@@ -13,12 +16,23 @@ public class GameFrame extends JFrame {
     private Applet game;
     private GameParameters parameters;
 
+    private JPanel topPanel;
+
     public GameFrame(Applet game, GameParameters parameters) {
         this.game = game;
         this.parameters = parameters;
 
+        topPanel = new JPanel();
+        JTextField worldTextField = new JTextField(15);
+        JButton loadButton = new JButton("Load");
+        topPanel.add(worldTextField);
+        topPanel.add(loadButton);
+
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setContentPane(game);
+        Container cp = getContentPane();
+        cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
+        cp.add(topPanel);
+        cp.add(game);
         pack();
         updateTitle();
 
@@ -77,6 +91,19 @@ public class GameFrame extends JFrame {
 
             @Override
             public void windowActivated(WindowEvent e) {
+            }
+        });
+
+        KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        focusManager.addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
+                    if (e.getKeyChar() == 'm' && e.isAltDown()) {
+                        topPanel.setVisible(!topPanel.isVisible());
+                    }
+                }
+                return false;
             }
         });
     }

@@ -6,31 +6,37 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
+/**
+ * The main game window.
+ */
 public class GameFrame extends JFrame {
 	/**
 	 * Required by Serializable.
 	 */
 	private static final long serialVersionUID = 1L;
+
+	private static final Dimension[] PREDEFINED_SIZES = { new Dimension(800, 600), new Dimension(1280, 720) };
 	private Applet game;
 	private GameParameters parameters;
 
 	private JMenuBar menuBar;
+	private JMenu predefinedSizesMenu;
+	private ProgressPanel progressPanel;
 
 	public GameFrame(Applet game, GameParameters parameters) {
 		this.game = game;
 		this.parameters = parameters;
 
 		JTextField worldTextField = new JTextField(15);
-		worldTextField.setMaximumSize(new Dimension(100, 0));
+		worldTextField.setMaximumSize(new Dimension(100, Integer.MAX_VALUE));
 		JButton loadButton = new JButton("Load");
-		JMenu predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
-		JMenuItem size800MenuItem = new JMenuItem("800 x 600");
-		size800MenuItem.setActionCommand("800,600");
-		JMenuItem size1280MenuItem = new JMenuItem("1280 x 720");
-		size1280MenuItem.setActionCommand("1280,720");
-		predefinedSizesMenu.add(size800MenuItem);
-		predefinedSizesMenu.add(size1280MenuItem);
+		predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
 		predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
+
+		addPredefinedSize(parameters.getMinWidth(), parameters.getMinHeight());
+		for (Dimension dim : PREDEFINED_SIZES) {
+			addPredefinedSize(dim.width, dim.height);
+		}
 		menuBar = new JMenuBar();
 		menuBar.add(worldTextField);
 		menuBar.add(loadButton);
@@ -43,16 +49,6 @@ public class GameFrame extends JFrame {
 		cp.add(game);
 		pack();
 		updateTitle();
-		
-		ActionListener predefinedSizesListener = (e) -> {
-			String[] arr = e.getActionCommand().split(",");
-			int width = Integer.parseInt(arr[0]);
-			int height = Integer.parseInt(arr[1]);
-			game.setPreferredSize(new Dimension(width, height));
-			pack();
-		};
-		size800MenuItem.addActionListener(predefinedSizesListener);
-		size1280MenuItem.addActionListener(predefinedSizesListener);
 
 		// Update title when applet changes size
 		game.addComponentListener(new ComponentAdapter() {
@@ -90,6 +86,40 @@ public class GameFrame extends JFrame {
 	}
 
 	private void updateTitle() {
-		setTitle(String.format("%s (%d x %d)", parameters.getTitle(), game.getWidth(), game.getHeight()));
+		setTitle(String.format("%s (%d × %d)", parameters.getTitle(), game.getWidth(), game.getHeight()));
+	}
+
+	private JMenuItem addPredefinedSize(int width, int height) {
+		JMenuItem menuItem = new JMenuItem(
+				new PredefinedSizeAction(String.format("%d × %d", width, height), width, height));
+		predefinedSizesMenu.add(menuItem);
+		return menuItem;
+	}
+
+	/**
+	 * Encapsulates the action performed when a user clicks on a predefined size
+	 * menu item.
+	 */
+	private class PredefinedSizeAction extends AbstractAction {
+		/**
+		 * Required by Serializable.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		private int width;
+		private int height;
+
+		public PredefinedSizeAction(String name, int width, int height) {
+			super(name);
+			this.width = width;
+			this.height = height;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			game.setPreferredSize(new Dimension(width, height));
+			game.setSize(width, height);
+			pack();
+		}
 	}
 }

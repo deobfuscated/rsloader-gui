@@ -61,12 +61,12 @@ public class GameParameters {
 		return initialClass;
 	}
 
-	public String getMinWidth() {
-		return configuration.get("applet_minwidth");
+	public int getMinWidth() {
+		return Integer.parseInt(configuration.get("applet_minwidth"));
 	}
 
-	public String getMinHeight() {
-		return configuration.get("applet_minheight");
+	public int getMinHeight() {
+		return Integer.parseInt(configuration.get("applet_minheight"));
 	}
 
 	public String getTitle() {

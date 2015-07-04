@@ -37,42 +37,14 @@ public class GameFrame extends JFrame {
         updateTitle();
 
         // Update title when applet changes size
-        game.addComponentListener(new ComponentListener() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-            }
-
+        game.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 updateTitle();
             }
+		});
 
-            @Override
-            public void componentMoved(ComponentEvent e) {
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-            }
-        });
-
-        addWindowListener(new WindowListener() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-            }
-
-            @Override
-            public void windowIconified(WindowEvent e) {
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-            }
-
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 // Only save window state if it is not maximized.
@@ -83,14 +55,6 @@ public class GameFrame extends JFrame {
                     Main.getConfiguration().setProperty("y", String.valueOf(getY()));
                     Main.saveConfiguration();
                 }
-            }
-
-            @Override
-            public void windowClosed(WindowEvent e) {
-            }
-
-            @Override
-            public void windowActivated(WindowEvent e) {
             }
         });
 

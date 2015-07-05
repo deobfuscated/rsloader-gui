@@ -14,6 +14,7 @@ public class Main {
 	public static final String[] languages = { "en", "de", "fr", "pt" };
 
 	private static final String CONFIG_FILE_NAME = "config.ini";
+	private static final String DEFAULT_BASE_URL = "http://www.runescape.com/";
 
 	private static DialogFrame loadingDialog;
 	private static Properties configuration;
@@ -30,6 +31,8 @@ public class Main {
 		} catch (IOException e) {
 			// There is no config.ini, that's okay.
 		}
+		
+		String baseUrl = args.length >= 1 ? args[0] : DEFAULT_BASE_URL;
 
 		SwingUtilities.invokeLater(() -> {
 			try {
@@ -45,7 +48,7 @@ public class Main {
 				loadingDialog = new DialogFrame();
 				loadingDialog.setVisible(true);
 				GameParameters params;
-				params = GameParameters.parse(new URL(new URL(args[0]), "jav_config.ws"));
+				params = GameParameters.parse(new URL(new URL(baseUrl), "jav_config.ws"));
 
 				GamePack gamepack = GamePack.load(params);
 				GameClassLoader gcl = new GameClassLoader(gamepack);

@@ -7,15 +7,15 @@ import java.awt.Dimension;
 public class Game {
     public static void launch(GameClassLoader gcl, GameParameters params, AppletStub stub) throws Exception {
         Main.getLoadingDialog().setStatus("Launching game");
-        Applet game = (Applet) gcl.loadClass(params.getInitialClass()).newInstance();
-        game.setPreferredSize(new Dimension(
+        Applet gameApplet = (Applet) gcl.loadClass(params.getInitialClass()).newInstance();
+        gameApplet.setPreferredSize(new Dimension(
                 Integer.parseInt(Main.getConfiguration().getProperty("width")),
                 Integer.parseInt(Main.getConfiguration().getProperty("height"))));
-        game.setStub(stub);
-        game.init();
-        game.start();
+        gameApplet.setStub(stub);
+        gameApplet.init();
+        gameApplet.start();
 
-        GameFrame window = new GameFrame(game, params);
+        GameFrame window = new GameFrame(gameApplet, params);
         String xStr = Main.getConfiguration().getProperty("x");
         String yStr = Main.getConfiguration().getProperty("y");
         if (xStr == null || yStr == null) {

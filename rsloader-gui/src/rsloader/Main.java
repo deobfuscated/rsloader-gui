@@ -24,6 +24,7 @@ public class Main {
 		Properties defaultProps = new Properties();
 		defaultProps.setProperty("width", "800");
 		defaultProps.setProperty("height", "600");
+		defaultProps.setProperty("screenshotPath", ".");
 
 		configuration = new Properties(defaultProps);
 		try (FileInputStream in = new FileInputStream(CONFIG_FILE_NAME)) {
@@ -31,7 +32,7 @@ public class Main {
 		} catch (IOException e) {
 			// There is no config.ini, that's okay.
 		}
-		
+
 		String baseUrl = args.length >= 1 ? args[0] : DEFAULT_BASE_URL;
 
 		SwingUtilities.invokeLater(() -> {
@@ -71,7 +72,7 @@ public class Main {
 
 	public static void saveConfiguration() {
 		try (FileOutputStream out = new FileOutputStream(CONFIG_FILE_NAME)) {
-			configuration.store(out, "");
+			configuration.store(out, "RSLoader configuration");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

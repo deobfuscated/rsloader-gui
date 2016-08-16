@@ -3,7 +3,11 @@ package rsloader;
 import java.applet.Applet;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -26,15 +30,12 @@ public class GameFrame extends JFrame {
 
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
-	//private ProgressPanel progressPanel;
+	private JButton screenshotButton;
 
 	public GameFrame(Applet gameApplet, GameParameters parameters) {
 		this.gameApplet = gameApplet;
 		this.parameters = parameters;
 
-		JTextField worldTextField = new JTextField(15);
-		worldTextField.setMaximumSize(new Dimension(100, Integer.MAX_VALUE));
-		JButton loadButton = new JButton(new LoadGameAction("Load"));
 		predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
 		predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
 
@@ -42,13 +43,13 @@ public class GameFrame extends JFrame {
 			addPredefinedSize(dim.width, dim.height);
 		}
 		menuBar = new JMenuBar();
-		menuBar.add(worldTextField);
-		menuBar.add(loadButton);
 		menuBar.add(predefinedSizesMenu);
-		menuBar.add(Box.createHorizontalGlue());
-		setJMenuBar(menuBar);
 
-		// progressPanel = new ProgressPanel();
+		// menuBar.add(Box.createHorizontalGlue());
+		screenshotButton = new JButton(new ScreenshotAction());
+		menuBar.add(screenshotButton);
+
+		setJMenuBar(menuBar);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -81,52 +82,37 @@ public class GameFrame extends JFrame {
 		});
 
 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		focusManager.addKeyEventDispatcher(new KeyEventDispatcher() {
-			@Override
-			public boolean dispatchKeyEvent(KeyEvent e) {
-				if (e.getID() == KeyEvent.KEY_TYPED && e.getKeyChar() == 'm' && e.isAltDown()) {
-					menuBar.setVisible(!menuBar.isVisible());
+		focusManager.addKeyEventDispatcher((KeyEvent e) -> {
+			// Eat Alt + chars. Don't eat all Alts so user can still type alt codes.
+			if (e.isAltDown() && Character.isAlphabetic(e.getKeyChar())) {
+				if (e.getID() == KeyEvent.KEY_TYPED) {
 					return true;
 				}
-				return false;
+				
+				// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
+				// Key-repeats would be very bad for screenshots, for example.
+				if (e.getID() == KeyEvent.KEY_RELEASED) {
+					if (e.getKeyChar() == 'm') {
+						menuBar.setVisible(!menuBar.isVisible());
+					}
+					if (e.getKeyChar() == 's') {
+						screenshotButton.doClick();
+					}
+					return true;
+				}
 			}
+			return false;
 		});
 	}
 
 	private void updateTitle() {
-		setTitle(String.format("%s (%d × %d)", parameters.getTitle(), gameApplet.getWidth(), gameApplet.getHeight()));
+		setTitle(String.format("%s (%d Ã— %d)", parameters.getTitle(), gameApplet.getWidth(), gameApplet.getHeight()));
 	}
 
 	private JMenuItem addPredefinedSize(int width, int height) {
 		JMenuItem menuItem = new JMenuItem(new PredefinedSizeAction(width, height));
 		predefinedSizesMenu.add(menuItem);
 		return menuItem;
-	}
-
-	/**
-	 * The action that loads the game.
-	 */
-	private class LoadGameAction extends AbstractAction {
-		/**
-		 * Required by Serializable.
-		 */
-		private static final long serialVersionUID = 1L;
-
-		public LoadGameAction(String name) {
-			super(name);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// TODO THIS DOESN'T WORK
-			try {
-				getContentPane().remove(gameApplet);
-				gameApplet.destroy();
-				gameApplet = null;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
 	}
 
 	/**
@@ -143,7 +129,7 @@ public class GameFrame extends JFrame {
 		private int height;
 
 		public PredefinedSizeAction(int width, int height) {
-			super(String.format("%d × %d", width, height));
+			super(String.format("%d Ã— %d", width, height));
 			this.width = width;
 			this.height = height;
 		}
@@ -153,6 +139,26 @@ public class GameFrame extends JFrame {
 			gameApplet.setPreferredSize(new Dimension(width, height));
 			gameApplet.setSize(width, height);
 			pack();
+		}
+	}
+
+	/**
+	 * Encapsulates the action performed when a user clicks on a predefined size
+	 * menu item.
+	 */
+	private class ScreenshotAction extends AbstractAction {
+		/**
+		 * Required by Serializable.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public ScreenshotAction() {
+			super("Screenshot");
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			ScreenshotUtils.saveScreenshot(gameApplet, Main.getConfiguration().getProperty("screenshotPath"));
 		}
 	}
 }

@@ -25,7 +25,7 @@ public class GamePack {
 	public static GamePack load(GameParameters params) throws IOException {
 		Main.getLoadingDialog().setStatus("Loading gamepack");
 		GamePack g = new GamePack();
-		g.game = params.getCacheDir();
+		g.game = params.getTitle();
 		g.local = new File(g.game + ".jar");
 		g.remote = new URL(params.getCodeBase() + params.getJar());
 		byte[] data = g.load();

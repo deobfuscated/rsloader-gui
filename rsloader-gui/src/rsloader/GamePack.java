@@ -90,5 +90,4 @@ public class GamePack {
 	public byte[] getResource(String name) {
 		return resources.get(name);
 	}
-
 }

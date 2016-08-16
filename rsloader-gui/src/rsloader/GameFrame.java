@@ -34,6 +34,8 @@ public class GameFrame extends JFrame {
 		this.gameApplet = gameApplet;
 		this.parameters = parameters;
 
+		this.setIconImage(new ImageIcon(getClass().getResource("/yellow-orb-32x32.png")).getImage());
+
 		predefinedSizesMenu = new JMenu("Predefined Sizes \u25be");
 		predefinedSizesMenu.getPopupMenu().setLightWeightPopupEnabled(false);
 
@@ -93,7 +95,7 @@ public class GameFrame extends JFrame {
 						screenshotButton.doClick();
 					}
 				}
-				
+
 				return true;
 			}
 			return false;

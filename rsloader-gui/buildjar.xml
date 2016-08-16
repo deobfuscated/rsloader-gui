@@ -4,8 +4,7 @@
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
-    <property name="dir.workspace" value="C:/Users/yongy/Documents/workspace"/>
-    <property name="dir.jarfile" value="C:/Users/yongy/Documents/GitHub/rsloader-gui"/>
+    <property name="dir.jarfile" value=".."/>
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/rsloader-gui.jar" filesetmanifest="mergewithoutmain">
             <manifest>

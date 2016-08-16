@@ -1,13 +1,11 @@
 package rsloader;
 
 import java.applet.Applet;
-import java.awt.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -85,10 +83,6 @@ public class GameFrame extends JFrame {
 		focusManager.addKeyEventDispatcher((KeyEvent e) -> {
 			// Eat Alt + chars. Don't eat all Alts so user can still type alt codes.
 			if (e.isAltDown() && Character.isAlphabetic(e.getKeyChar())) {
-				if (e.getID() == KeyEvent.KEY_TYPED) {
-					return true;
-				}
-				
 				// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
 				// Key-repeats would be very bad for screenshots, for example.
 				if (e.getID() == KeyEvent.KEY_RELEASED) {
@@ -98,8 +92,9 @@ public class GameFrame extends JFrame {
 					if (e.getKeyChar() == 's') {
 						screenshotButton.doClick();
 					}
-					return true;
 				}
+				
+				return true;
 			}
 			return false;
 		});

@@ -90,7 +90,7 @@ public class GameFrame extends JFrame {
 				if (e.getID() == KeyEvent.KEY_RELEASED) {
 					switch (e.getKeyCode()) {
 					case KeyEvent.VK_M:
-						menuBar.setVisible(!menuBar.isVisible());
+						setMenuBarVisible(!menuBar.isVisible());
 						break;
 					case KeyEvent.VK_S:
 						screenshotButton.doClick();
@@ -101,6 +101,20 @@ public class GameFrame extends JFrame {
 			}
 			return false;
 		});
+	}
+
+	private void setMenuBarVisible(boolean visible) {
+		if (menuBar.isVisible() != visible) {
+			menuBar.setVisible(visible);
+
+			// Update height accordingly (if un-maximized)
+			if (getExtendedState() == NORMAL) {
+				int menuBarHeight = menuBar.getHeight();
+				int deltaHeight = visible ? menuBarHeight : -menuBarHeight;
+				Dimension size = getSize();
+				setSize(size.width, size.height + deltaHeight);
+			}
+		}
 	}
 
 	private void updateTitle() {

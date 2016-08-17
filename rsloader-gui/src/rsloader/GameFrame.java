@@ -83,19 +83,20 @@ public class GameFrame extends JFrame {
 
 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		focusManager.addKeyEventDispatcher((KeyEvent e) -> {
-			// Eat Alt + chars. Don't eat all Alts so user can still type alt codes.
-			if (e.isAltDown() && Character.isAlphabetic(e.getKeyChar())) {
+			// Eat Ctrl+Shift+anything. Players cannot set Ctrl+Shift+anything as keybinds within RS.
+			if (e.isControlDown() && e.isShiftDown()) {
 				// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
 				// Key-repeats would be very bad for screenshots, for example.
 				if (e.getID() == KeyEvent.KEY_RELEASED) {
-					if (e.getKeyChar() == 'm') {
+					switch (e.getKeyCode()) {
+					case KeyEvent.VK_M:
 						menuBar.setVisible(!menuBar.isVisible());
-					}
-					if (e.getKeyChar() == 's') {
+						break;
+					case KeyEvent.VK_S:
 						screenshotButton.doClick();
+						break;
 					}
 				}
-
 				return true;
 			}
 			return false;

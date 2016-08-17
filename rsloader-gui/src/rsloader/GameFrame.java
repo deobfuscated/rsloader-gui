@@ -1,10 +1,10 @@
 package rsloader;
 
 import java.applet.Applet;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.KeyboardFocusManager;
+import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.*;
 
@@ -29,6 +29,7 @@ public class GameFrame extends JFrame {
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
 	private JButton screenshotButton;
+	private PopupPanel screenshotPopupPanel = new PopupPanel(this, 3000);
 
 	public GameFrame(Applet gameApplet, GameParameters parameters) {
 		this.gameApplet = gameApplet;
@@ -170,7 +171,32 @@ public class GameFrame extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			ScreenshotUtils.saveScreenshot(gameApplet, Main.getConfiguration().getProperty("screenshotPath"));
+			// Don't want screenshot to include the popup!
+			// TODO: hide all popups (when they get implemented)
+			screenshotPopupPanel.hidePopup();
+			
+			final File file = ScreenshotUtils.saveScreenshot(gameApplet, Main.getConfiguration().getProperty("screenshotPath"));
+			if (file != null) {
+				screenshotPopupPanel.setText("Screenshot saved to " + file.getName());
+				screenshotPopupPanel.setClickAction(() -> {
+					try {
+						Desktop.getDesktop().open(file.getParentFile());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				});
+			} else {
+				screenshotPopupPanel.setText("Failed to save screenshot");
+			}
+
+			Point location = gameApplet.getLocationOnScreen();
+			Dimension size = gameApplet.getSize();
+			// Right align
+			final int margin = 10;
+			int x = location.x + size.width - screenshotPopupPanel.getPreferredSize().width - margin;
+			int y = location.y + margin;
+			screenshotPopupPanel.showPopup(x, y);
 		}
 	}
 }

@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * The main game window.
@@ -102,23 +100,9 @@ public class GameFrame extends JFrame {
 			}
 		});
 
-		profileWorldField.getDocument().addDocumentListener(new DocumentListener() {
+		profileWorldField.addFocusListener(new FocusAdapter() {
 			@Override
-			public void removeUpdate(DocumentEvent e) {
-				onChange();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				onChange();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				onChange();
-			}
-
-			private void onChange() {
+			public void focusLost(FocusEvent e) {
 				try {
 					infoPopupPanel.hidePopup();
 					String world = profileWorldField.getText();

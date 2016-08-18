@@ -1,7 +1,9 @@
 package rsloader;
 
 import java.awt.Component;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 
@@ -23,6 +25,7 @@ public class PopupPanel extends JPanel {
 		hideTimer = new Timer(popupDuration, (ActionEvent e) -> {
 			popup.hide();
 		});
+		hideTimer.setRepeats(false);
 
 		label = new JLabel();
 		add(label);

@@ -18,7 +18,7 @@ public class Main {
 
 	private static DialogFrame loadingDialog;
 	private static Properties configuration;
-
+	
 	public static void main(String[] args) {
 		// TODO: move these to a Configuration class.
 		Properties defaultProps = new Properties();

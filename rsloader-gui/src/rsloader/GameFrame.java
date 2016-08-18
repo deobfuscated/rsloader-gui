@@ -5,8 +5,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * The main game window.
@@ -23,13 +26,21 @@ public class GameFrame extends JFrame {
 			new Dimension(1280, 720)
 	};
 
+	private static final int CLICK_THRESHOLD_GOOD = 150;
+	private static final Color CLICK_THRESHOLD_GOOD_COLOR = new Color(128, 255, 128);
+	private static final int CLICK_THRESHOLD_BAD = 750;
+	private static final Color CLICK_THRESHOLD_BAD_COLOR = new Color(255, 128, 128);
+	private static final Color CLICK_THRESHOLD_NEUTRAL_COLOR = new Color(255, 255, 255);
+
 	private Applet gameApplet;
 	private GameParameters parameters;
+
+	private ClickProfiler clickProfiler = new ClickProfiler();
 
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
 	private JButton screenshotButton;
-	private PopupPanel screenshotPopupPanel = new PopupPanel(this, 3000);
+	private PopupPanel infoPopupPanel = new PopupPanel(this, 3000);
 
 	public GameFrame(Applet gameApplet, GameParameters parameters) {
 		this.gameApplet = gameApplet;
@@ -49,6 +60,15 @@ public class GameFrame extends JFrame {
 		// menuBar.add(Box.createHorizontalGlue());
 		screenshotButton = new JButton(new ScreenshotAction());
 		menuBar.add(screenshotButton);
+
+		menuBar.add(Box.createHorizontalGlue());
+
+		JLabel profileWorldLabel = new JLabel("Profile click world: ");
+		menuBar.add(profileWorldLabel);
+
+		JTextField profileWorldField = new JTextField(10);
+		profileWorldField.setMaximumSize(profileWorldField.getPreferredSize());
+		menuBar.add(profileWorldField);
 
 		setJMenuBar(menuBar);
 
@@ -82,8 +102,88 @@ public class GameFrame extends JFrame {
 			}
 		});
 
-		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		focusManager.addKeyEventDispatcher((KeyEvent e) -> {
+		profileWorldField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				onChange();
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				onChange();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				onChange();
+			}
+
+			private void onChange() {
+				try {
+					String world = profileWorldField.getText();
+					if (world.isEmpty())
+						return;
+						
+					CompletableFuture<Void> task = clickProfiler.connect(world);
+					task.whenComplete((aVoidThing, ex) -> {
+						if (ex == null)
+							showInfoPopup("Connected to " + clickProfiler.getAddress(), null);
+						else
+							showInfoPopup("Failed to connect", null);
+					});
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		bindKeyboardShortcuts();
+		bindMouseToProfileClicks();
+	}
+
+	@Override
+	public void paint(Graphics g) {
+		// TODO Auto-generated method stub
+		super.paint(g);
+	}
+
+	private void bindMouseToProfileClicks() {
+		Toolkit.getDefaultToolkit().addAWTEventListener((final AWTEvent e) -> {
+			if (clickProfiler.isConnected() && e.getID() == MouseEvent.MOUSE_PRESSED) {
+				final MouseEvent m = (MouseEvent) e;
+				if (m.getButton() == MouseEvent.BUTTON1 && gameApplet.isAncestorOf(m.getComponent())) {
+					clickProfiler.doClick().thenAccept(duration -> {
+						if (duration.toMillis() == 0)
+							return;
+
+						final PopupPanel popupPanel = new PopupPanel(this, 600);
+						long millis = duration.toMillis();
+						if (millis <= CLICK_THRESHOLD_GOOD)
+							popupPanel.setBackground(CLICK_THRESHOLD_GOOD_COLOR);
+						else if (millis >= CLICK_THRESHOLD_BAD)
+							popupPanel.setBackground(CLICK_THRESHOLD_BAD_COLOR);
+						else
+							popupPanel.setBackground(CLICK_THRESHOLD_NEUTRAL_COLOR);
+						popupPanel.setText(millis + " ms");
+
+						// Show on bottom-right
+						Point location = gameApplet.getLocationOnScreen();
+						Dimension size = gameApplet.getSize();
+						final int margin = 10;
+						int x = location.x + size.width - popupPanel.getPreferredSize().width - margin;
+						int y = location.y + size.height - popupPanel.getPreferredSize().height - margin;
+						popupPanel.showPopup(x, y);
+					});
+				}
+			}
+
+		}, AWTEvent.MOUSE_EVENT_MASK);
+	}
+
+	private void bindKeyboardShortcuts() {
+		final KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		focusManager.addKeyEventDispatcher(e -> {
 			// Eat Ctrl+Shift+anything. Players cannot set Ctrl+Shift+anything as keybinds within RS.
 			if (e.isControlDown() && e.isShiftDown()) {
 				// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
@@ -102,6 +202,19 @@ public class GameFrame extends JFrame {
 			}
 			return false;
 		});
+	}
+
+	private void showInfoPopup(String text, Runnable clickAction) {
+		infoPopupPanel.setText(text);
+		infoPopupPanel.setClickAction(clickAction);
+
+		Point location = gameApplet.getLocationOnScreen();
+		Dimension size = gameApplet.getSize();
+		// Right align
+		final int margin = 10;
+		int x = location.x + size.width - infoPopupPanel.getPreferredSize().width - margin;
+		int y = location.y + margin;
+		infoPopupPanel.showPopup(x, y);
 	}
 
 	private void setMenuBarVisible(boolean visible) {
@@ -173,30 +286,26 @@ public class GameFrame extends JFrame {
 		public void actionPerformed(ActionEvent arg0) {
 			// Don't want screenshot to include the popup!
 			// TODO: hide all popups (when they get implemented)
-			screenshotPopupPanel.hidePopup();
-			
-			final File file = ScreenshotUtils.saveScreenshot(gameApplet, Main.getConfiguration().getProperty("screenshotPath"));
+			infoPopupPanel.hidePopup();
+
+			String text = "Failed to save screenshot";
+			Runnable clickAction = null;
+
+			final File file = ScreenshotUtils.saveScreenshot(gameApplet,
+					Main.getConfiguration().getProperty("screenshotPath"));
 			if (file != null) {
-				screenshotPopupPanel.setText("Screenshot saved to " + file.getName());
-				screenshotPopupPanel.setClickAction(() -> {
+				text = "Screenshot saved to " + file.getName();
+				clickAction = () -> {
 					try {
 						Desktop.getDesktop().open(file.getParentFile());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				});
-			} else {
-				screenshotPopupPanel.setText("Failed to save screenshot");
+				};
 			}
 
-			Point location = gameApplet.getLocationOnScreen();
-			Dimension size = gameApplet.getSize();
-			// Right align
-			final int margin = 10;
-			int x = location.x + size.width - screenshotPopupPanel.getPreferredSize().width - margin;
-			int y = location.y + margin;
-			screenshotPopupPanel.showPopup(x, y);
+			showInfoPopup(text, clickAction);
 		}
 	}
 }

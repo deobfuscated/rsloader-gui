@@ -33,9 +33,8 @@ public class ClickProfiler {
 	 *            For RS3, use a numeric string.
 	 *            For oldschool, use "oldschool[world]".
 	 * @return A future for the connection task.
-	 * @throws IOException
 	 */
-	public CompletableFuture<Void> connect(String world) throws IOException {
+	public CompletableFuture<Void> connect(String world) {
 		if (connectionTask != null && !connectionTask.isDone()) {
 			connectionTask.cancel(true);
 		}
@@ -55,7 +54,9 @@ public class ClickProfiler {
 		connectionTask = new CompletableFuture<>();
 		CompletableFuture.runAsync(() -> {
 			try {
-				socket = new Socket(host, port);
+				synchronized (this) {
+					socket = new Socket(host, port);
+				}
 				connectionTask.complete(null);
 			} catch (IOException e) {
 				connectionTask.completeExceptionally(e);
@@ -64,27 +65,36 @@ public class ClickProfiler {
 		return connectionTask;
 	}
 
-	public void disconnect() throws IOException {
+	public synchronized void disconnect() {
 		if (isConnected()) {
-			socket.close();
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public CompletableFuture<Duration> doClick() {
-		if (isConnected()) {
-			long t0 = System.nanoTime();
-			return CompletableFuture.supplyAsync(() -> {
+		long t0 = System.nanoTime();
+		CompletableFuture<Duration> task = new CompletableFuture<>();
+		CompletableFuture.runAsync(() -> {
+			synchronized (this) {
 				try {
-					socket.getOutputStream().write(SOCKET_SEND_BYTE);
-					socket.getInputStream().read();
+					if (isConnected()) {
+						socket.getOutputStream().write(SOCKET_SEND_BYTE);
+						socket.getInputStream().read();
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					task.completeExceptionally(e);
 				}
-				long t1 = System.nanoTime();
-				return Duration.ofNanos(t1 - t0);
-			});
-		}
-		return CompletableFuture.completedFuture(Duration.ZERO);
+			}
+			long t1 = System.nanoTime();
+			task.complete(Duration.ofNanos(t1 - t0));
+		});
+		return task;
 	}
 }

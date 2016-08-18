@@ -38,6 +38,7 @@ public class GameFrame extends JFrame {
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
 	private JButton screenshotButton;
+	private JTextField profileWorldField;
 	private PopupPanel infoPopupPanel = new PopupPanel(this, 3000);
 
 	public GameFrame(Applet gameApplet, GameParameters parameters) {
@@ -64,7 +65,7 @@ public class GameFrame extends JFrame {
 		JLabel profileWorldLabel = new JLabel("Profile click world: ");
 		menuBar.add(profileWorldLabel);
 
-		JTextField profileWorldField = new JTextField(10);
+		profileWorldField = new JTextField(10);
 		profileWorldField.setMaximumSize(profileWorldField.getPreferredSize());
 		menuBar.add(profileWorldField);
 
@@ -103,24 +104,7 @@ public class GameFrame extends JFrame {
 		profileWorldField.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				try {
-					infoPopupPanel.hidePopup();
-					String world = profileWorldField.getText();
-					if (world.isEmpty()) {
-						clickProfiler.disconnect();
-					} else {
-						CompletableFuture<Void> task = clickProfiler.connect(world);
-						task.whenComplete((aVoidThing, ex) -> {
-							if (ex == null)
-								showInfoPopup("Connected to " + clickProfiler.getAddress(), null);
-							else
-								showInfoPopup("Failed to connect", null);
-						});
-					}
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				connectProfiler();
 			}
 		});
 
@@ -128,10 +112,21 @@ public class GameFrame extends JFrame {
 		bindMouseToProfileClicks();
 	}
 
-	@Override
-	public void paint(Graphics g) {
-		// TODO Auto-generated method stub
-		super.paint(g);
+	private void connectProfiler() {
+		infoPopupPanel.hidePopup();
+
+		String world = profileWorldField.getText();
+		if (world.isEmpty()) {
+			clickProfiler.disconnect();
+		} else {
+			CompletableFuture<Void> task = clickProfiler.connect(world);
+			task.whenComplete((aVoidThing, ex) -> {
+				if (ex == null)
+					showInfoPopup("Connected to " + clickProfiler.getAddress(), null);
+				else
+					showInfoPopup("Failed to connect", null);
+			});
+		}
 	}
 
 	private void bindMouseToProfileClicks() {
@@ -139,8 +134,8 @@ public class GameFrame extends JFrame {
 			if (clickProfiler.isConnected() && e.getID() == MouseEvent.MOUSE_PRESSED) {
 				final MouseEvent m = (MouseEvent) e;
 				if (m.getButton() == MouseEvent.BUTTON1 && gameApplet.isAncestorOf(m.getComponent())) {
-					clickProfiler.doClick().thenAccept(duration -> {
-						if (duration.toMillis() == 0)
+					clickProfiler.doClick().whenComplete((duration, ex) -> {
+						if (ex != null || duration.isZero())
 							return;
 
 						final PopupPanel popupPanel = new PopupPanel(this, 600);

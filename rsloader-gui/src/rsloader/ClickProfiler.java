@@ -18,7 +18,7 @@ public class ClickProfiler {
 
 	public boolean isConnected() {
 		// return socket != null && socket.isConnected();
-		return socket != null && socket.isConnected();
+		return socket != null && socket.isConnected() && !socket.isClosed();
 	}
 
 	public InetAddress getAddress() {

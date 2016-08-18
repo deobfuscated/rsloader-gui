@@ -120,17 +120,19 @@ public class GameFrame extends JFrame {
 
 			private void onChange() {
 				try {
+					infoPopupPanel.hidePopup();
 					String world = profileWorldField.getText();
-					if (world.isEmpty())
-						return;
-						
-					CompletableFuture<Void> task = clickProfiler.connect(world);
-					task.whenComplete((aVoidThing, ex) -> {
-						if (ex == null)
-							showInfoPopup("Connected to " + clickProfiler.getAddress(), null);
-						else
-							showInfoPopup("Failed to connect", null);
-					});
+					if (world.isEmpty()) {
+						clickProfiler.disconnect();
+					} else {
+						CompletableFuture<Void> task = clickProfiler.connect(world);
+						task.whenComplete((aVoidThing, ex) -> {
+							if (ex == null)
+								showInfoPopup("Connected to " + clickProfiler.getAddress(), null);
+							else
+								showInfoPopup("Failed to connect", null);
+						});
+					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

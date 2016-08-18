@@ -269,24 +269,26 @@ public class GameFrame extends JFrame {
 			// TODO: hide all popups (when they get implemented)
 			infoPopupPanel.hidePopup();
 
-			String text = "Failed to save screenshot";
-			Runnable clickAction = null;
-
-			final File file = ScreenshotUtils.saveScreenshot(gameApplet,
+			CompletableFuture<File> result = ScreenshotUtils.saveScreenshot(gameApplet,
 					Main.getConfiguration().getProperty("screenshotPath"));
-			if (file != null) {
-				text = "Screenshot saved to " + file.getName();
-				clickAction = () -> {
-					try {
-						Desktop.getDesktop().open(file.getParentFile());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				};
-			}
+			result.whenComplete((file, ex) -> {
+				String text = "Failed to save screenshot";
+				Runnable clickAction = null;
 
-			showInfoPopup(text, clickAction);
+				if (file != null) {
+					text = "Screenshot saved to " + file.getName();
+					clickAction = () -> {
+						try {
+							Desktop.getDesktop().open(file.getParentFile());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					};
+				}
+
+				showInfoPopup(text, clickAction);
+			});
 		}
 	}
 }

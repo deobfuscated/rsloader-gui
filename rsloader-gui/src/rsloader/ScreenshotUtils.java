@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import javax.imageio.ImageIO;
 
@@ -15,20 +16,23 @@ public class ScreenshotUtils {
 	 *            The component to take the screenshot of.
 	 * @param path
 	 *            The path to save.
-	 * @return The file of the saved screenshot if successful, otherwise null.
+	 * @return The future of the file of the saved screenshot if successful, otherwise an exceptionally completed
+	 *         future.
 	 */
-	public static File saveScreenshot(Component component, String path) {
-		try {
-			Rectangle bounds = new Rectangle(component.getLocationOnScreen(), component.getSize());
-			BufferedImage image = new Robot().createScreenCapture(bounds);
-			File availableFile = findAvailableFile(path);
-			ImageIO.write(image, "png", availableFile);
-			return availableFile;
-		} catch (AWTException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+	public static CompletableFuture<File> saveScreenshot(Component component, String path) {
+		final CompletableFuture<File> task = new CompletableFuture<>();
+		CompletableFuture.runAsync(() -> {
+			try {
+				Rectangle bounds = new Rectangle(component.getLocationOnScreen(), component.getSize());
+				BufferedImage image = new Robot().createScreenCapture(bounds);
+				File availableFile = findAvailableFile(path);
+				ImageIO.write(image, "png", availableFile);
+				task.complete(availableFile);
+			} catch (AWTException | IOException e) {
+				task.completeExceptionally(e);
+			}
+		});
+		return task;
 	}
 
 	private static File findAvailableFile(String path) {

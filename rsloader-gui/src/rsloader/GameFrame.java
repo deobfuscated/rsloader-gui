@@ -8,7 +8,6 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -123,8 +122,8 @@ public class GameFrame extends JFrame {
 					Main.getConfiguration().setProperty("height", String.valueOf(gameApplet.getHeight()));
 					Main.getConfiguration().setProperty("x", String.valueOf(getX()));
 					Main.getConfiguration().setProperty("y", String.valueOf(getY()));
-					Main.saveConfiguration();
 				}
+				Main.saveConfiguration();
 			}
 		});
 
@@ -332,7 +331,6 @@ public class GameFrame extends JFrame {
 		 * Required by Serializable.
 		 */
 		private static final long serialVersionUID = 1L;
-		private Rectangle bounds;
 
 		public FullscreenAction() {
 			super("Fullscreen");
@@ -340,24 +338,20 @@ public class GameFrame extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (getExtendedState() == NORMAL) {
+			if (!isUndecorated()) {
 				// windowed->fullscreen
 				setMenuBarVisible(false);
-				bounds = getBounds();
 				dispose();
-				setBounds(0, 0, getToolkit().getScreenSize().width,
-                        getToolkit().getScreenSize().height);
-				setExtendedState(MAXIMIZED_BOTH);
 				setUndecorated(true);
 				setVisible(true);
+				getGraphicsConfiguration().getDevice().setFullScreenWindow(GameFrame.this);
 				showInfoPopup("Entered fullscreen. Press F11 to exit.", null);
 			} else {
 				// fullscreen->windowed
+				getGraphicsConfiguration().getDevice().setFullScreenWindow(GameFrame.this);
 				dispose();
-				setExtendedState(NORMAL);
 				setUndecorated(false);
 				setVisible(true);
-				setBounds(bounds);
 				setMenuBarVisible(true);
 			}
 		}

@@ -1,13 +1,38 @@
 package rsloader;
 
 import java.applet.Applet;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AWTEvent;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JTextField;
 
 /**
  * The main game window.
@@ -18,11 +43,8 @@ public class GameFrame extends JFrame {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final Dimension[] PREDEFINED_SIZES = {
-			new Dimension(765, 543),
-			new Dimension(800, 600),
-			new Dimension(1280, 720)
-	};
+	private static final Dimension[] PREDEFINED_SIZES = { new Dimension(765, 543), new Dimension(800, 600),
+			new Dimension(1280, 720) };
 
 	private static final int CLICK_THRESHOLD_GOOD = 150;
 	private static final Color CLICK_THRESHOLD_GOOD_COLOR = new Color(128, 255, 128);
@@ -37,6 +59,7 @@ public class GameFrame extends JFrame {
 
 	private JMenuBar menuBar;
 	private JMenu predefinedSizesMenu;
+	private JMenuItem fullscreenMenuItem;
 	private JButton screenshotButton;
 	private JTextField profileWorldField;
 	private PopupPanel infoPopupPanel = new PopupPanel(this, 3000);
@@ -53,6 +76,10 @@ public class GameFrame extends JFrame {
 		for (Dimension dim : PREDEFINED_SIZES) {
 			addPredefinedSize(dim.width, dim.height);
 		}
+		fullscreenMenuItem = new JMenuItem(new FullscreenAction());
+
+		predefinedSizesMenu.add(fullscreenMenuItem);
+
 		menuBar = new JMenuBar();
 		menuBar.add(predefinedSizesMenu);
 
@@ -165,11 +192,12 @@ public class GameFrame extends JFrame {
 	private void bindKeyboardShortcuts() {
 		final KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		focusManager.addKeyEventDispatcher(e -> {
-			// Eat Ctrl+Shift+anything. Players cannot set Ctrl+Shift+anything as keybinds within RS.
-			if (e.isControlDown() && e.isShiftDown()) {
-				// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
-				// Key-repeats would be very bad for screenshots, for example.
-				if (e.getID() == KeyEvent.KEY_RELEASED) {
+			// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
+			// Key-repeats would be very bad for screenshots, for example.
+			if (e.getID() == KeyEvent.KEY_RELEASED) {
+				// Eat Ctrl+Shift+anything. Players cannot set
+				// Ctrl+Shift+anything as keybinds within RS.
+				if (e.isControlDown() && e.isShiftDown()) {
 					switch (e.getKeyCode()) {
 					case KeyEvent.VK_M:
 						setMenuBarVisible(!menuBar.isVisible());
@@ -178,6 +206,8 @@ public class GameFrame extends JFrame {
 						screenshotButton.doClick();
 						break;
 					}
+				} else if (e.getKeyCode() == KeyEvent.VK_F11) {
+					fullscreenMenuItem.getAction().actionPerformed(null);
 				}
 				return true;
 			}
@@ -264,7 +294,7 @@ public class GameFrame extends JFrame {
 		}
 
 		@Override
-		public void actionPerformed(ActionEvent arg0) {
+		public void actionPerformed(ActionEvent e) {
 			// Don't want screenshot to include the popup!
 			// TODO: hide all popups (when they get implemented)
 			infoPopupPanel.hidePopup();
@@ -280,15 +310,53 @@ public class GameFrame extends JFrame {
 					clickAction = () -> {
 						try {
 							Desktop.getDesktop().open(file.getParentFile());
-						} catch (IOException e) {
+						} catch (IOException e2) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							e2.printStackTrace();
 						}
 					};
 				}
 
 				showInfoPopup(text, clickAction);
 			});
+		}
+	}
+
+	/**
+	 * Encapsulates the action performed when a user clicks on the fullscreen
+	 * menu item
+	 */
+	private class FullscreenAction extends AbstractAction {
+		/**
+		 * Required by Serializable.
+		 */
+		private static final long serialVersionUID = 1L;
+		private Rectangle bounds;
+
+		public FullscreenAction() {
+			super("Fullscreen");
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (!isUndecorated()) {
+				// windowed->fullscreen
+				bounds = getBounds();
+				dispose();
+				setUndecorated(true);
+				setBounds(0, 0, getToolkit().getScreenSize().width,
+                        getToolkit().getScreenSize().height);
+				menuBar.setVisible(false);
+				setVisible(true);
+				showInfoPopup("Entered fullscreen. Press F11 to exit.", null);
+			} else {
+				// fullscreen->windowed
+				setBounds(bounds);
+				dispose();
+				setUndecorated(false);
+				setMenuBarVisible(true);
+				setVisible(true);
+			}
 		}
 	}
 }

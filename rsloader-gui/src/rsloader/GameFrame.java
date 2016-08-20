@@ -339,23 +339,25 @@ public class GameFrame extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (!isUndecorated()) {
+			if (getExtendedState() == NORMAL) {
 				// windowed->fullscreen
+				setMenuBarVisible(false);
 				bounds = getBounds();
 				dispose();
-				setUndecorated(true);
 				setBounds(0, 0, getToolkit().getScreenSize().width,
                         getToolkit().getScreenSize().height);
-				menuBar.setVisible(false);
+				setExtendedState(MAXIMIZED_BOTH);
+				setUndecorated(true);
 				setVisible(true);
 				showInfoPopup("Entered fullscreen. Press F11 to exit.", null);
 			} else {
 				// fullscreen->windowed
-				setBounds(bounds);
 				dispose();
+				setExtendedState(NORMAL);
 				setUndecorated(false);
-				setMenuBarVisible(true);
 				setVisible(true);
+				setBounds(bounds);
+				setMenuBarVisible(true);
 			}
 		}
 	}

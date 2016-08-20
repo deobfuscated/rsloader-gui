@@ -195,8 +195,6 @@ public class GameFrame extends JFrame {
 			// We use KEY_RELEASED to do the actual actions to prevent key-repeats.
 			// Key-repeats would be very bad for screenshots, for example.
 			if (e.getID() == KeyEvent.KEY_RELEASED) {
-				// Eat Ctrl+Shift+anything. Players cannot set
-				// Ctrl+Shift+anything as keybinds within RS.
 				if (e.isControlDown() && e.isShiftDown()) {
 					switch (e.getKeyCode()) {
 					case KeyEvent.VK_M:
@@ -206,10 +204,13 @@ public class GameFrame extends JFrame {
 						screenshotButton.doClick();
 						break;
 					}
+					// Eat Ctrl+Shift+anything. This is safe because players cannot set
+					// Ctrl+Shift+anything as keybinds within RS.
+					return true;
 				} else if (e.getKeyCode() == KeyEvent.VK_F11) {
 					fullscreenMenuItem.getAction().actionPerformed(null);
+					return true;
 				}
-				return true;
 			}
 			return false;
 		});

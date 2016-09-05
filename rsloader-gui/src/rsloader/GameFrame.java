@@ -198,18 +198,17 @@ public class GameFrame extends JFrame {
 					switch (e.getKeyCode()) {
 					case KeyEvent.VK_M:
 						setMenuBarVisible(!menuBar.isVisible());
-						break;
+						return true;
 					case KeyEvent.VK_S:
 						screenshotButton.doClick();
-						break;
+						return true;
 					}
-					// Eat Ctrl+Shift+anything. This is safe because players cannot set
-					// Ctrl+Shift+anything as keybinds within RS.
-					return true;
 				} else if (e.getKeyCode() == KeyEvent.VK_F11) {
 					fullscreenMenuItem.getAction().actionPerformed(null);
 					return true;
 				}
+			} else if (e.isControlDown() && e.isShiftDown()) {
+				return true;
 			}
 			return false;
 		});
